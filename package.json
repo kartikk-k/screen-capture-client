@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "npx playwright install chromium && next start",
+    "start": "npx playwright install && next start",
     "lint": "next lint"
   },
   "dependencies": {
