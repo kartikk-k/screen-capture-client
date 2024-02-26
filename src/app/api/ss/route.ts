@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
-import { Browser, chromium } from 'playwright-core'
+import { Browser, chromium } from 'playwright'
 import z from 'zod'
 
 
