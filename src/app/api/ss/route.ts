@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
-import { Browser, chromium } from 'playwright'
+import { Browser } from 'playwright'
+import playwright from 'playwright-aws-lambda'
 import z from 'zod'
 
 
@@ -72,7 +73,7 @@ export async function GET(request: NextRequest) {
 
 async function launchBrowser() {
     // console.log("launching browser")
-    browserContext = await chromium.launch({
+    browserContext = await playwright.launchChromium({
         headless: true,
     });
 
