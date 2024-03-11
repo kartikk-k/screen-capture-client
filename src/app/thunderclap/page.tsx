@@ -22,7 +22,7 @@ function Page() {
 
         setInProgress(true)
 
-        await fetch(`/api/ss?urls=${urls}&darkMode=${darkMode}&fullPage=${fullScreen}&width=${width}&height=${height}`)
+        await fetch(`http://139.59.86.114:9000/api/screenshot?urls=${urls}&darkMode=${darkMode}&fullPage=${fullScreen}&width=${width}&height=${height}`)
             .then(response => response.json())
             .then(data => {
                 if (!data.results) alert("Error")
