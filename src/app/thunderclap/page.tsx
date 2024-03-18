@@ -22,15 +22,16 @@ function Page() {
 
         setInProgress(true)
 
-        await fetch(`http://139.59.86.114:9000/api/screenshot?urls=${urls}&darkMode=${darkMode}&fullPage=${fullScreen}&width=${width}&height=${height}`, {
-            method: 'GET',
-            mode: 'no-cors'
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.results) alert("Error")
-                setResults(data.results)
+        await fetch("/api/capture", {
+            method: 'POST',
+            body: JSON.stringify({
+                urls: urls.split(','),
+                fullPage: fullScreen,
+                width,
+                height,
             })
+        }).then(response => response.json())
+            .then(data => setResults(data.images))
             .catch(error => alert('error' + error))
 
         setInProgress(false)
@@ -86,13 +87,13 @@ function Page() {
 
                 <div className='flex items-center justify-between'>
                     <div className='flex items-center justify-center text-[#d6ecd8] text-sm gap-12'>
-                        <div className='flex items-center gap-2'>
+                        {/* <div className='flex items-center gap-2'>
                             <Checkbox
                                 checked={darkMode}
                                 onCheckedChange={() => setDarkMode(!darkMode)}
                             />
                             <label>Dark mode</label>
-                        </div>
+                        </div> */}
 
                         <div className='flex items-center gap-2'>
                             <Checkbox
