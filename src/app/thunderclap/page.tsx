@@ -4,12 +4,13 @@ import { Checkbox } from '@/components/ui/checkbox'
 import JSZip from 'jszip'
 import Image from 'next/image'
 import React from 'react'
+import { Loader2Icon } from 'lucide-react'
 
 function Page() {
 
     const [urls, setUrls] = React.useState<string>('')
 
-    const [darkMode, setDarkMode] = React.useState(false)
+    // const [darkMode, setDarkMode] = React.useState(false)
     const [fullScreen, setFullScreen] = React.useState(false)
     const [width, setWidth] = React.useState(1440)
     const [height, setHeight] = React.useState(1080)
@@ -21,22 +22,41 @@ function Page() {
         if (!urls) return
 
         setInProgress(true)
+        setResults([])
 
-        await fetch("/api/capture", {
-            method: 'POST',
-            body: JSON.stringify({
-                urls: urls.split(','),
-                fullPage: fullScreen,
-                width,
-                height,
-            })
-        }).then(response => response.json())
-            .then(data => setResults(data.images))
-            .catch(error => alert('error' + error))
+        const promises = urls.trim().split(',').map(async (url) => {
+            return await getScreenshot(url)
+        })
+
+        await Promise.allSettled(promises)
 
         setInProgress(false)
 
     }
+
+    const getScreenshot = async (url:string) => {
+        
+        const apiEndpoint = new URL('https://api.screenshotone.com/take')
+
+        apiEndpoint.searchParams.set('access_key', 'yR6GX0-0Upbdlg')
+        apiEndpoint.searchParams.set('url', url)
+
+        fullScreen && apiEndpoint.searchParams.set('full_page', fullScreen.toString())
+        fullScreen && apiEndpoint.searchParams.set('full_page_scroll', 'true')
+
+        apiEndpoint.searchParams.set('viewport_width', width.toString())
+        apiEndpoint.searchParams.set('viewport_height', height.toString())
+    
+        const response = await fetch(apiEndpoint.toString())
+
+        const buffer = await response.arrayBuffer();
+        const base64Data = Buffer.from(buffer).toString('base64');
+
+        setResults(prev => [...prev, base64Data])    
+    }
+
+
+
 
     const downloadZip = () => {
         if (!results) return
@@ -79,9 +99,14 @@ function Page() {
                     <button
                         onClick={renderWebPage}
                         disabled={inProgress}
-                        className='bg-[#285446] disabled:opacity-50 text-white h-12 min-w-[150px] rounded-lg'
+                        className='bg-[#285446] flex items-center justify-center disabled:opacity-50 text-white h-12 min-w-[150px] rounded-lg'
                     >
-                        Render
+                        {!inProgress ? (
+                            'Render'
+                        ) : (
+                            <Loader2Icon className='animate-spin' size={20} />
+                        )}
+                        {/* Render */}
                     </button>
                 </div>
 

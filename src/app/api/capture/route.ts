@@ -33,7 +33,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
 async function getScreenshot(url: string, width: string, height: string, fullPage: string) {
 
 
-    const response = await fetch(`https://api.screenshotone.com/take?access_key=yR6GX0-0Upbdlg&url=${url}&full_page=${fullPage}`)
+    const response = await fetch(`https://api.screenshotone.com/take?access_key=yR6GX0-0Upbdlg&url=${url}&full_page=${fullPage}&viewport_width=${width}&viewport_height=${height}`)
 
     const buffer = await response.arrayBuffer();
     const base64Data = Buffer.from(buffer).toString('base64');
