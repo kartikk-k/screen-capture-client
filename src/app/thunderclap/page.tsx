@@ -3,17 +3,18 @@
 import { Checkbox } from '@/components/ui/checkbox'
 import JSZip from 'jszip'
 import Image from 'next/image'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Loader2Icon } from 'lucide-react'
+import z from 'zod'
 
 function Page() {
 
     const [urls, setUrls] = React.useState<string>('')
 
     // const [darkMode, setDarkMode] = React.useState(false)
-    const [fullScreen, setFullScreen] = React.useState(false)
+    const [fullScreen, setFullScreen] = React.useState(true)
     const [width, setWidth] = React.useState(1440)
-    const [height, setHeight] = React.useState(1080)
+    // const [height, setHeight] = React.useState(1080)
 
     const [inProgress, setInProgress] = React.useState(false)
     const [results, setResults] = React.useState<string[]>([])
@@ -24,7 +25,11 @@ function Page() {
         setInProgress(true)
         setResults([])
 
-        const promises = urls.trim().split(',').map(async (url) => {
+        const validUrls = validateUrls(urls)
+        setUrls(validUrls.join(', '))
+
+
+        const promises = validUrls.map(async (url) => {
             return await getScreenshot(url)
         })
 
@@ -34,8 +39,8 @@ function Page() {
 
     }
 
-    const getScreenshot = async (url:string) => {
-        
+    const getScreenshot = async (url: string) => {
+
         const apiEndpoint = new URL('https://api.screenshotone.com/take')
 
         apiEndpoint.searchParams.set('access_key', 'yR6GX0-0Upbdlg')
@@ -45,18 +50,40 @@ function Page() {
         fullScreen && apiEndpoint.searchParams.set('full_page_scroll', 'true')
 
         apiEndpoint.searchParams.set('viewport_width', width.toString())
-        apiEndpoint.searchParams.set('viewport_height', height.toString())
-    
+        // apiEndpoint.searchParams.set('viewport_height', height.toString())
+
         const response = await fetch(apiEndpoint.toString())
 
         const buffer = await response.arrayBuffer();
         const base64Data = Buffer.from(buffer).toString('base64');
 
-        setResults(prev => [...prev, base64Data])    
+        setResults(prev => [...prev, base64Data])
     }
 
+    
+    const validateUrls = (value: string) => {
+        const urlSchema = z.string().url()
 
+        if (!value) return []
 
+        let validUrls: string[] = []
+
+        value.split(/\s|\n/)
+            .map(url => url.trim())
+            .join(',')
+            .split(',')
+            .filter(url => {
+                const isValid = urlSchema.safeParse(url);
+                if (isValid.success) {
+                    validUrls.push(url);
+                    return true;
+                }
+                return false;
+            });
+
+        console.log(validUrls)
+        return validUrls
+    }
 
     const downloadZip = () => {
         if (!results) return
@@ -98,7 +125,7 @@ function Page() {
                     />
                     <button
                         onClick={renderWebPage}
-                        disabled={inProgress}
+                        disabled={inProgress || !urls.trim()}
                         className='bg-[#285446] flex items-center justify-center disabled:opacity-50 text-white h-12 min-w-[150px] rounded-lg'
                     >
                         {!inProgress ? (
@@ -111,7 +138,7 @@ function Page() {
                 </div>
 
                 <div className='flex items-center justify-between'>
-                    <div className='flex items-center justify-center text-[#d6ecd8] text-sm gap-12'>
+                    <div className='flex items-center justify-center text-[#d6ecd8] text-sm gap-8'>
                         {/* <div className='flex items-center gap-2'>
                             <Checkbox
                                 checked={darkMode}
@@ -138,7 +165,7 @@ function Page() {
                             <label>Width</label>
                         </div>
 
-                        <div className='flex items-center gap-2'>
+                        {/* <div className='flex items-center gap-2'>
                             <input
                                 type="number"
                                 value={height}
@@ -146,7 +173,7 @@ function Page() {
                                 className='bg-[#2b2f32] rounded-md h-6 w-16 px-1 text-center outline-none'
                             />
                             <label>Height</label>
-                        </div>
+                        </div> */}
                     </div>
                     <button
                         onClick={downloadZip}
