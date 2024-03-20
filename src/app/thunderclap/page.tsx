@@ -43,7 +43,7 @@ function Page() {
 
         const apiEndpoint = new URL('https://api.screenshotone.com/take')
 
-        apiEndpoint.searchParams.set('access_key', 'yR6GX0-0Upbdlg')
+        apiEndpoint.searchParams.set('access_key', process.env.NEXT_PUBLIC_SCREENSHOTONE_API_KEY!)
         apiEndpoint.searchParams.set('url', url)
 
         fullScreen && apiEndpoint.searchParams.set('full_page', fullScreen.toString())
@@ -52,15 +52,20 @@ function Page() {
         apiEndpoint.searchParams.set('viewport_width', width.toString())
         // apiEndpoint.searchParams.set('viewport_height', height.toString())
 
-        const response = await fetch(apiEndpoint.toString())
+        await fetch(apiEndpoint.toString())
+            .then(async response => {
+                if(response.status !== 200) throw new Error('Failed to fetch')
 
-        const buffer = await response.arrayBuffer();
-        const base64Data = Buffer.from(buffer).toString('base64');
+                const buffer = await response.arrayBuffer();
+                const base64Data = Buffer.from(buffer).toString('base64');
 
-        setResults(prev => [...prev, base64Data])
+                setResults(prev => [...prev, base64Data])
+            })
+            .catch(err => {console.log("we" ,err) })
+
     }
 
-    
+
     const validateUrls = (value: string) => {
         const urlSchema = z.string().url()
 
