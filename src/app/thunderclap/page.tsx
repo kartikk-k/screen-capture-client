@@ -3,7 +3,7 @@
 import { Checkbox } from '@/components/ui/checkbox'
 import JSZip from 'jszip'
 import Image from 'next/image'
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Loader2Icon } from 'lucide-react'
 import z from 'zod'
 
@@ -17,7 +17,7 @@ function Page() {
     // const [height, setHeight] = React.useState(1080)
 
     const [inProgress, setInProgress] = React.useState(false)
-    const [results, setResults] = React.useState<string[]>([])
+    const [results, setResults] = React.useState<{url: string, image:string}[]>([])
 
     const renderWebPage = async () => {
         if (!urls) return
@@ -59,7 +59,7 @@ function Page() {
                 const buffer = await response.arrayBuffer();
                 const base64Data = Buffer.from(buffer).toString('base64');
 
-                setResults(prev => [...prev, base64Data])
+                setResults(prev => [...prev, {url: url, image:base64Data}])
             })
             .catch(err => {console.log("we" ,err) })
 
@@ -94,8 +94,8 @@ function Page() {
         if (!results) return
         const zip = new JSZip();
         // @ts-ignore
-        results.forEach((item, i) => {
-            zip.file(`result-${i}.png`, item, { base64: true });
+        results.forEach((item) => {
+            zip.file(`${item.url}.png`, item.image, { base64: true });
         });
 
         zip.generateAsync({ type: "blob" })
@@ -196,10 +196,10 @@ function Page() {
                         <hr className='border-[#2b2f32]' />
 
                         <div className='columns-3 space-y-4'>
-                            {results && results.map((item, i) => (
+                            {results && results.map((item) => (
                                 <Image
-                                    key={i}
-                                    src={`data:image/png;base64,${item}`}
+                                    key={item.url}
+                                    src={`data:image/png;base64,${item.image}`}
                                     width={400}
                                     height={720}
                                     alt='result'
